@@ -11,24 +11,38 @@ export const carpeTick = async () => {
   // you should always try to refresh accounts, even on error
   getAccounts()
 
-  if (!tick_in_progress) {
-    logger(Level.Info, 'carpeTick')
+  // This will check for a network connection
+  // If successful this will set the `network.connected` bool to true. And wallet will display a view.
+  // will also refresh peer stats looking to find good peers.
+  // Ensure tick doesn't proceed if already in progress or initialization is not complete
+  if (!tick_in_progress && get(isInit)) {
+    tick_in_progress = true
+    logger(Level.Info, 'carpeTick initiated because isInit is true')
 
-    // This will check for a network connection
-    // If successful this will set the `network.connected` bool to true. And wallet will display a view.
-    // will also refresh peer stats looking to find good peers.
-    if (get(isInit)) {
-      tick_in_progress = true
+    try {
+      await getMetadata()
+      logger(Level.Info, 'getMetadata succeeded in carpeTick')
 
-      // don't try to connect while we are booting up the app and looking for fullnodes
-      // things that need network connectivity e.g. miner happen here
-      getMetadata()
-        .then(refreshAccounts)
-        // tower things
-        .then(getTowerChainView)
-        .then(getLocalHeight)
-        .then(maybeEmitBacklog)
-        .finally(() => (tick_in_progress = false))
+      await refreshAccounts()
+      logger(Level.Info, 'refreshAccounts succeeded in carpeTick')
+
+      await getTowerChainView()
+      logger(Level.Info, 'getTowerChainView succeeded in carpeTick')
+
+      await getLocalHeight()
+      logger(Level.Info, 'getLocalHeight succeeded in carpeTick')
+
+      await maybeEmitBacklog()
+      logger(Level.Info, 'maybeEmitBacklog succeeded in carpeTick')
+    } catch (error) {
+      logger(Level.Error, `carpeTick error: ${error.message}`)
+    } finally {
+      tick_in_progress = false
+      logger(Level.Info, 'carpeTick completed')
     }
+  } else if (tick_in_progress) {
+    logger(Level.Warn, 'carpeTick skipped due to tick_in_progress')
+  } else {
+    logger(Level.Warn, 'carpeTick skipped due to isInit being false')
   }
 }
