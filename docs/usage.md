@@ -49,7 +49,7 @@ Once clicked, you will yet again be asked to cofirm that you really wish to turn
 
 **A word of caution once set you cannot undo this and the wallet will forever be a slow wallet.**
 
-You need to have at least 1 libra in your account to configure the slow wallet as it is an on-chain event.
+You need to have at least 10 libra in your account to configure the slow wallet as it is an on-chain event.
 
 For a visual walk-through of how to set a slow wallet, check the screencast below.
 
